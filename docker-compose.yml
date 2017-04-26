@@ -1,0 +1,16 @@
+version: "3"
+services:
+  transmiision:
+    image: "linuxserver/transmission"
+    ports:
+      - "80:9091"
+      - "51413:51413"
+    volumes:
+      - ./config:/config
+      - ./downloads:/downloads
+      - ./watch:/watch
+    environment:
+      - "PUID: 1002"
+      - "PGID: 1003"
+    stdin_open: true
+    tty: true
