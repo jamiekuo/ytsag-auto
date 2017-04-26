@@ -10,9 +10,8 @@ services:
       - ./downloads:/downloads
       - ./watch:/watch
       - ./bin:/usr/local/bin
-    environment:
-      - "PUID: 1002"
-      - "PGID: 1003"
+#    environment:
+#      - "PUID: 1002"
+#      - "PGID: 1003"
     stdin_open: true
     tty: true
-    command: [drive]
