@@ -21,9 +21,6 @@ for page in range(1, 124):
 	except Exception as e:
 		print (str(e))
 
-	# result = json.load(r.text)
-	with open("done.%d" % page, "w+") as done:
-		done.write(r.text)
 
 	result = json.loads(r.text)
 	# print(result['data']['movies'])
@@ -31,12 +28,8 @@ for page in range(1, 124):
 	for movie in result['data']['movies']:
 		for torrent in movie['torrents']:
 			subprocess.call(["transmission-remote",
-							 "35.189.175.32:80",
+							 "%s:80" % "localhost",
 							 "-n",
 							 "%s:%s" % ('jamie', auth['password']),
 							 "-a",
 							  torrent['url']])
-			time.sleep(60)
-			#break
-		#break
-	#break
