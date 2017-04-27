@@ -3,6 +3,10 @@ import json
 import subprocess
 import time
 
+auth = {}
+with open('auth.json', 'r') as fp:
+	auth = json.load(fp)
+
 pars = {
 	'sort_by' : 'year',
 	'limit' : 50,
@@ -10,7 +14,8 @@ pars = {
 }
 
 for page in range(1, 124):
-
+	
+	pars['page']= page
 	try:
 		r = requests.get('https://yts.ag/api/v2/list_movies.json', params=pars)
 	except Exception as e:
@@ -28,10 +33,10 @@ for page in range(1, 124):
 			subprocess.call(["transmission-remote",
 							 "35.189.175.32:80",
 							 "-n",
-							 "user:pw",
+							 "%s:%s" % ('jamie', auth['password']),
 							 "-a",
 							  torrent['url']])
-			time.sleep(1)
+			time.sleep(60)
 			#break
 		#break
 	#break
