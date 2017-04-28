@@ -1,5 +1,5 @@
 auth.json
 config/*
-!config/settings.json.exam
+!config/settings.exam.json
 downloads
 watch
