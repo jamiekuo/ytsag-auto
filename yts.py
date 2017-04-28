@@ -28,8 +28,8 @@ for page in range(1, 124):
 	for movie in result['data']['movies']:
 		for torrent in movie['torrents']:
 			subprocess.call(["transmission-remote",
-							 "%s:80" % "localhost",
+							 "%s:%s" % (auth['address'],auth['port']),
 							 "-n",
-							 "%s:%s" % ('jamie', auth['password']),
+							 "%s:%s" % (auth['user'], auth['password']),
 							 "-a",
 							  torrent['url']])

@@ -1,0 +1,3 @@
+cp auth.json.exam auth.json
+cp config/settings.json.exam config/settings.json
+

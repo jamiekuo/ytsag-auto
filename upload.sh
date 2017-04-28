@@ -1,6 +1,6 @@
 #!/bin/bash
 
-localfold=/home/selina/ytsag-auto/downloads/complete
+localfold=/home/jamie/ytsag-auto/downloads/complete
 folderid=0B6VJgbksxQNSNHRJSmRtS0ZWMXM
 
 cd $localfold
