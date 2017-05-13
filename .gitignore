@@ -1,5 +1,7 @@
-auth.json
 config/*
 !config/settings.exam.json
-downloads
+auth.json
+complete
+incomplete
 watch
+__pycache__/

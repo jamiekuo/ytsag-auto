@@ -1,9 +1,9 @@
 #!/bin/bash
 
-localfold=/home/jamie/ytsag-auto/downloads/complete
-folderid=0B6VJgbksxQNSNHRJSmRtS0ZWMXM
+localfolder=./downloads/complete
+folderid=0B6VJgbksxQNSdHdfQXlRYWZqU00
 
-cd $localfold
+cd $localfolder
 for i in ./*
 do
     if [ "$i" != "./*" ]
@@ -11,4 +11,3 @@ do
         flock -n "$i" -c "drive upload -f \"$i\" -p $folderid && rm -rf \"$i\"" &
     fi
 done
-

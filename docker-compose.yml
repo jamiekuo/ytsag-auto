@@ -9,5 +9,8 @@ services:
       - ./config:/config
       - ./downloads:/downloads
       - ./watch:/watch
+    environment:
+      - PUID=1000
+      - PGID=1000
     stdin_open: true
     tty: true

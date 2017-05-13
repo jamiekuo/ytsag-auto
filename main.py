@@ -1,75 +1,99 @@
-import transmissionrpc
-import requests
+import queue
 import json
 import subprocess
-import time
 import threading
+import time
+import transmissionrpc
 import YTS
 
-auth = {}
+
+# USER INPUT
+LIMIT_BYTES = 5*1000*1000*1000
+MAX_ETA = 20
+# https://yts.ag/api
+params = {
+	'sort_by' : 'year',
+	'limit': 50,
+	'minimum_rating': 6
+}
+ignore_qualities = ['720p']
+# load configs
+auth = []
 with open('auth.json', 'r') as fp:
 	auth = json.load(fp)
 
-# finished = []
-# with open('finished.json', 'r') as fp:
-# 	finished = json.load(fp)
-
-print("connect transmission...")
-try:
-	tc = transmissionrpc.Client(
-		auth['address'],
-		port=auth['port'],
-		user=auth['user'],
-		password=auth['password'] )
-except Exception as e:
-	print (str(e))
-
-print("get torrents...")
-ts = tc.get_torrents()
-
-remote_finish = []
-for i in ts:
-	if i.isFinished:
-		remote_finish.append(i.hashString)
-
-finished = remote_finish
-# finished = list(set(finished)|set(remote_finish))
+settings = []
+with open('config/settings.json', 'r') as fp:
+	settings = json.load(fp)
 
 
-# get movie
-print("get all movies")
-params = {
-	'sort_by' : 'year',
-	'limit': 50
-}
-YTS.collect_movies(params)
-time.sleep(1)
+def trans_remote_cmd(auth, url):
 
-
-def add_torrent(url):
-	global auth
-	print("add: "+url)
-	subprocess.call([ "transmission-remote",
+	argv = [ "transmission-remote",
 			 "%s:%s" % (auth['address'],auth['port']),
-			 "-n",
-			 "%s:%s" % (auth['user'], auth['password']),
-			 "-a",
-			  url
-			  ])
+			 "-n", "%s:%s" % (auth['user'], auth['password']),
+			 "-a"
+			  	]
 
-threads = []
-ignore_qualities = ['720p']
-for movie in YTS.all_movies:
+	argv.append(url)
+	print(argv)
+	subprocess.call(argv)
+			  	
+
+# login transmissionrpc
+print( "authenticate rpc server...")
+try:
+	tc = transmissionrpc.Client(auth['address'], port=auth['port'],
+		user=auth['user'], password=auth['password'])
+except Exception as e:
+	print(str(e))
+	exit(1)
+
+#get movies
+print( "start collect yts.ag movies...")
+yc = YTS.collector()
+yc.start(params)
+
+#get torrents
+tq = queue.Queue()
+for movie in yc.movies:
 	if 'torrents' in movie.keys():
 		for torrent in movie['torrents']:
-			if not torrent['quality'] in ignore_qualities:
-				if not torrent['hash'].lower() in finished:
-					thread = threading.Thread(target=add_torrent, args=(torrent['url'],), name="T"+torrent['url'])
-					threads.append(thread)
-					thread.start()
-					time.sleep(0.4)
-for t in threads:
-	t.join()
+			tq.put(torrent)
 
-print("finish")
+thrds = []
+while not tq.empty():
 
+	eta = MAX_ETA
+	downloading_bytes = 0
+
+	for t in tc.get_torrents():
+		if not t.isFinished:
+			downloading_bytes += t.totalSize
+			if t.eta >= 0:
+				print(t.name+': eta='+str(t.eta)+' sec')
+				if t.eta < eta:
+					eta = t.eta
+
+	while not tq.empty():
+		t = tq.get()	
+		if downloading_bytes + t['size_bytes'] <= LIMIT_BYTES:
+			downloading_bytes += t['size_bytes']
+			th = threading.Thread(target=trans_remote_cmd, args=(auth, t['url']))
+			thrds.append(th)
+			th.start()
+		else:
+			tq.put(t)
+			break
+
+	print("downloading bytes: %d" % downloading_bytes)
+	print("wait for %d sec ..." % eta)
+	time.sleep(eta)
+# 	# upload section
+	subprocess.call(['./upload.sh'])
+
+
+for th in thrds:
+	th.join()
+
+print('---finished---')

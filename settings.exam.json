@@ -1,8 +1,8 @@
 {
     "cache-size-mb": 128,
     "download-queue-enabled": false,
-    "download-dir": "/downloads/complete",
-    "incomplete-dir": "/downloads/incomplete",
+    "download-dir": "complete",
+    "incomplete-dir": "incomplete",
     "incomplete-dir-enabled": true,
     "peer-limit-global": 100000,
     "peer-limit-per-torrent": 10000,
@@ -16,6 +16,5 @@
     "rpc-port": 9091,
     "rpc-url": "/transmission/",
     "rpc-username": "admin",
-    "rpc-password": "admin",
-    "rpc-whitelist-enabled": false
+    "rpc-password": "admin"
 }

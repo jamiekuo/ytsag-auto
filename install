@@ -1,3 +1,0 @@
-cp auth.exam.json auth.json
-cp config/settings.exam.json config/settings.json
-
