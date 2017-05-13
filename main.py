@@ -1,8 +1,9 @@
 import queue
 import json
+import time
+import os.path
 import subprocess
 import threading
-import time
 import transmissionrpc
 import YTS
 
@@ -25,6 +26,16 @@ with open('auth.json', 'r') as fp:
 settings = []
 with open('config/settings.json', 'r') as fp:
 	settings = json.load(fp)
+
+finished={}
+try:
+	fp = open('finished.json', 'r')
+	finished = json.load(fp)
+except:
+	pass
+
+with open('finished.json', 'w') as fp:
+	json.dump(finished,fp)
 
 
 def trans_remote_cmd(auth, url):
@@ -68,7 +79,9 @@ while not tq.empty():
 	downloading_bytes = 0
 
 	for t in tc.get_torrents():
-		if not t.isFinished:
+		if t.isFinished:
+			finished.update({t.hashString:t.name})
+		else:
 			downloading_bytes += t.totalSize
 			if t.eta >= 0:
 				print(t.name+': eta='+str(t.eta)+' sec')
@@ -76,7 +89,9 @@ while not tq.empty():
 					eta = t.eta
 
 	while not tq.empty():
-		t = tq.get()	
+		t = tq.get()
+		if t['hash'].lower() in finished.keys():
+			continue
 		if downloading_bytes + t['size_bytes'] <= LIMIT_BYTES:
 			downloading_bytes += t['size_bytes']
 			th = threading.Thread(target=trans_remote_cmd, args=(auth, t['url']))
@@ -95,5 +110,9 @@ while not tq.empty():
 
 for th in thrds:
 	th.join()
+
+
+with open('finished.json', 'r') as fp:
+	json.dump(finished,fp)
 
 print('---finished---')
