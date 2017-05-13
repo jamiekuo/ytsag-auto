@@ -9,7 +9,7 @@ import YTS
 
 
 # USER INPUT
-LIMIT_BYTES = 5*1000*1000*1000
+LIMIT_BYTES = 1000*1000*1000*1000
 MAX_ETA = 20
 # https://yts.ag/api
 params = {
@@ -91,6 +91,8 @@ while not tq.empty():
 	while not tq.empty():
 		t = tq.get()
 		if t['hash'].lower() in finished.keys():
+			continue
+		if t['quality'] in ignore_qualities:
 			continue
 		if downloading_bytes + t['size_bytes'] <= LIMIT_BYTES:
 			downloading_bytes += t['size_bytes']
