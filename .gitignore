@@ -1,3 +1,8 @@
-config
-downloads
+config/*
+!config/settings.exam.json
+auth.json
+finished.json
+complete
+incomplete
 watch
+__pycache__/

@@ -1,0 +1,3 @@
+[submodule "transmissionrpc"]
+	path = transmissionrpc
+	url = https://github.com/jamiekuo/transmissionrpc

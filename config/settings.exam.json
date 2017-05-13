@@ -1,0 +1,21 @@
+{
+    "cache-size-mb": 128,
+    "download-queue-enabled": false,
+    "download-dir": "/downloads/complete",
+    "incomplete-dir": "/downloads/incomplete",
+    "incomplete-dir-enabled": true,
+    "peer-limit-global": 100000,
+    "peer-limit-per-torrent": 10000,
+    "peer-port": 51413,
+    "ratio-limit": 0,
+    "ratio-limit-enabled": true,
+    "speed-limit-up": 0,
+    "speed-limit-up-enabled": true,
+    "rpc-authentication-required": true,
+    "rpc-enabled": true,
+    "rpc-port": 9091,
+    "rpc-url": "/transmission/",
+    "rpc-username": "admin",
+    "rpc-password": "admin",
+    "rpc-whitelist-enabled": false
+}
