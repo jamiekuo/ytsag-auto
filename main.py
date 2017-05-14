@@ -77,16 +77,19 @@ while not tq.empty():
 
 	eta = MAX_ETA
 	downloading_bytes = 0
-
+	
+	print("RPC: get torrents info")
 	for t in tc.get_torrents():
 		if t.isFinished:
 			finished.update({t.hashString:t.name})
 		else:
 			downloading_bytes += t.totalSize
 			if t.eta >= 0:
-				print(t.name+': eta='+str(t.eta)+' sec')
 				if t.eta < eta:
 					eta = t.eta
+	
+	with open('finished.json', 'w') as fp:
+		json.dump(finished,fp)
 
 	while not tq.empty():
 		t = tq.get()
@@ -107,14 +110,13 @@ while not tq.empty():
 	print("wait for %d sec ..." % eta)
 	time.sleep(eta)
 # 	# upload section
-	subprocess.call(['./upload.sh'])
-
+	threading.Thread(target=subprocess.call, args=['./upload.sh'],).start()
 
 for th in thrds:
 	th.join()
 
 
-with open('finished.json', 'r') as fp:
+with open('finished.json', 'w') as fp:
 	json.dump(finished,fp)
 
 print('---finished---')
