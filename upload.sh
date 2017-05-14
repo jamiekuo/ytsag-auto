@@ -1,7 +1,7 @@
 #!/bin/bash
 
 localfolder=./downloads/complete
-folderid=0B6VJgbksxQNSdHdfQXlRYWZqU00
+folderid=0B6VJgbksxQNSaW9aTTNVNnczTkk
 
 cd $localfolder
 for i in ./*

@@ -1,7 +1,7 @@
 import queue
 import json
 import time
-import os.path
+import os
 import subprocess
 import threading
 import transmissionrpc
@@ -9,8 +9,9 @@ import YTS
 
 
 # USER INPUT
+POLLING_INT = 0
 LIMIT_BYTES = 1000*1000*1000*1000
-MAX_ETA = 20
+
 # https://yts.ag/api
 params = {
 	'sort_by' : 'year',
@@ -18,6 +19,7 @@ params = {
 	'minimum_rating': 6
 }
 ignore_qualities = ['720p']
+
 # load configs
 auth = []
 with open('auth.json', 'r') as fp:
@@ -32,10 +34,8 @@ try:
 	fp = open('finished.json', 'r')
 	finished = json.load(fp)
 except:
+	print("no finished.json")
 	pass
-
-with open('finished.json', 'w') as fp:
-	json.dump(finished,fp)
 
 
 def trans_remote_cmd(auth, url):
@@ -64,7 +64,6 @@ except Exception as e:
 print( "start collect yts.ag movies...")
 yc = YTS.collector()
 yc.start(params)
-
 #get torrents
 tq = queue.Queue()
 for movie in yc.movies:
@@ -75,25 +74,30 @@ for movie in yc.movies:
 thrds = []
 while not tq.empty():
 
-	eta = MAX_ETA
-	downloading_bytes = 0
-	
+	# upload section
+	print("./upload.sh ...")
+	with open(os.devnull, 'w') as devnull:
+		subprocess.call( ['./upload.sh'], stdout=devnull )
+
 	print("RPC: get torrents info")
-	for t in tc.get_torrents():
+	ts = []
+	try:
+		ts = tc.get_torrents()
+	except Exception as e:
+		print(str(e))
+		continue
+
+	downloading_bytes = 0
+	for t in ts:
 		if t.isFinished:
 			finished.update({t.hashString:t.name})
 		else:
 			downloading_bytes += t.totalSize
-			if t.eta >= 0:
-				if t.eta < eta:
-					eta = t.eta
-	
-	with open('finished.json', 'w') as fp:
-		json.dump(finished,fp)
 
 	while not tq.empty():
 		t = tq.get()
-		if t['hash'].lower() in finished.keys():
+		if t['hash'].lower() in finished:
+			print( "had done: ", finished[ t['hash'].lower() ] )
 			continue
 		if t['quality'] in ignore_qualities:
 			continue
@@ -107,14 +111,11 @@ while not tq.empty():
 			break
 
 	print("downloading bytes: %d" % downloading_bytes)
-	print("wait for %d sec ..." % eta)
-	time.sleep(eta)
-# 	# upload section
-	threading.Thread(target=subprocess.call, args=['./upload.sh'],).start()
+	print("wait for %d sec ..." % POLLING_INT)
+	time.sleep(POLLING_INT)
 
 for th in thrds:
 	th.join()
-
 
 with open('finished.json', 'w') as fp:
 	json.dump(finished,fp)
